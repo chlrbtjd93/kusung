@@ -1,0 +1,35 @@
+---
+- name: Build image and with build args
+  hosts: localhost
+  tasks:
+    - name: Get infos on container
+      community.docker.docker_container_info:
+        name: my-hello-world-container
+      register: result
+
+    - name: Remove Docker container
+      community.docker.docker_container:
+        name: my-hello-world-container
+        state: absent
+      when: result.exists
+
+    - name: Remove Docker Image 
+      community.docker.docker_image:
+        name: my-hello-world
+        state: absent
+
+    - name: Build Docker Image 
+      community.docker.docker_image:
+        name: my-hello-world
+        build:
+          path: ~/hello-world
+        source: build
+
+    - name: Deploy Docker container
+      community.docker.docker_container:
+        name: my-hello-world-container
+        image: my-hello-world
+        state: started
+        ports: 
+          - "8080:8080"
+...
